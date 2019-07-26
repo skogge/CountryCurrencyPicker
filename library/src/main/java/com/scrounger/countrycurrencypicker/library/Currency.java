@@ -20,10 +20,6 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
-
 import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
@@ -110,7 +106,8 @@ public class Currency implements Parcelable {
         this.flagId = flagId;
     }
 
-    public Currency(String code, String name, String symbol, Integer flagId, ArrayList<Country> countries) {
+    public Currency(String code, String name, String symbol, Integer flagId,
+            ArrayList<Country> countries) {
         this.code = code;
         this.name = name;
         this.symbol = symbol;
@@ -135,7 +132,8 @@ public class Currency implements Parcelable {
         if (currency != null) {
             return new Currency(
                     currency.getCurrencyCode(),
-                    Build.VERSION.SDK_INT >= 19 ? currency.getDisplayName() : currency.getCurrencyCode(),
+                    Build.VERSION.SDK_INT >= 19 ? currency.getDisplayName()
+                            : currency.getCurrencyCode(),
                     currency.getSymbol(),
                     Helper.getFlagDrawableId(currency.getCurrencyCode(), context));
         }
@@ -146,7 +144,8 @@ public class Currency implements Parcelable {
     public static Currency getCurrency(java.util.Currency currency, Context context) {
         return new Currency(
                 currency.getCurrencyCode(),
-                Build.VERSION.SDK_INT >= 19 ? currency.getDisplayName() : currency.getCurrencyCode(),
+                Build.VERSION.SDK_INT >= 19 ? currency.getDisplayName()
+                        : currency.getCurrencyCode(),
                 currency.getSymbol(),
                 Helper.getFlagDrawableId(currency.getCurrencyCode(), context));
     }
@@ -161,12 +160,14 @@ public class Currency implements Parcelable {
             tmpCountries = Country.listAllWithCurrencies(context, null);
         }
 
-        ArrayList<Country> foundCountries = new ArrayList<>(Collections2.filter(tmpCountries, new Predicate<Country>() {
-            @Override
-            public boolean apply(Country input) {
-                return input.getCurrency().getCode().equals(myCurrency.getCode());
-            }
-        }));
+
+        ArrayList<Country> foundCountries = new ArrayList<>(CollectionUtil.filter(tmpCountries,
+                new CollectionUtil.Func1<Country, Boolean>() {
+                    @Override
+                    public Boolean call(Country country) {
+                        return country.getCurrency().getCode().equals(myCurrency.getCode());
+                    }
+                }));
 
         if (foundCountries.size() > 0) {
             myCurrency.setCountries(foundCountries);
@@ -192,19 +193,23 @@ public class Currency implements Parcelable {
         sortList(list);
 
         if (filter != null && filter.length() > 0) {
-            return new ArrayList<>(Collections2.filter(list, new Predicate<Currency>() {
-                @Override
-                public boolean apply(Currency input) {
-                    return input.getName().toLowerCase().contains(filter.toLowerCase()) ||
-                            input.getSymbol().toLowerCase().contains(filter.toLowerCase());
-                }
-            }));
+            return new ArrayList<>(
+                    CollectionUtil.filter(list, new CollectionUtil.Func1<Currency, Boolean>() {
+                        @Override
+                        public Boolean call(Currency currency) {
+                            return currency.getName().toLowerCase().contains(filter.toLowerCase())
+                                    ||
+                                    currency.getSymbol().toLowerCase().contains(
+                                            filter.toLowerCase());
+                        }
+                    }));
         } else {
             return list;
         }
     }
 
-    public static ArrayList<Currency> listAllWithCountries(final Context context, final String filter) {
+    public static ArrayList<Currency> listAllWithCountries(final Context context,
+            final String filter) {
         ArrayList<Currency> list = new ArrayList<>();
 
         for (java.util.Currency currency : getAllCurrencies()) {
@@ -218,19 +223,21 @@ public class Currency implements Parcelable {
         sortList(list);
 
         if (filter != null && filter.length() > 0) {
-            return new ArrayList<>(Collections2.filter(list, new Predicate<Currency>() {
-                @Override
-                public boolean apply(Currency input) {
-                    return input.getName().toLowerCase().contains(filter.toLowerCase()) ||
-                            input.getSymbol().toLowerCase().contains(filter.toLowerCase()) ||
-                            Iterables.any(input.getCountries(), new Predicate<Country>() {
-                                @Override
-                                public boolean apply(Country input) {
-                                    return input.getName().toLowerCase().contains(filter.toLowerCase());
-                                }
-                            });
-                }
-            }));
+            return new ArrayList<>(CollectionUtil.filter(list,
+                    new CollectionUtil.Func1<Currency, Boolean>() {
+                        @Override
+                        public Boolean call(Currency input) {
+                            return input.getName().toLowerCase().contains(filter.toLowerCase()) ||
+                                    input.getSymbol().toLowerCase().contains(filter.toLowerCase()) ||
+                                    CollectionUtil.contains(input.getCountries(), new CollectionUtil.Func1<Country, Boolean>() {
+                                        @Override
+                                        public Boolean call(Country country) {
+                                            return country.getName()
+                                                    .toLowerCase().contains(filter.toLowerCase());
+                                        }
+                                    });
+                        }
+                    }));
         } else {
             return list;
         }
@@ -242,7 +249,8 @@ public class Currency implements Parcelable {
         Collections.sort(list, new Comparator<Currency>() {
             @Override
             public int compare(Currency ccItem, Currency ccItem2) {
-                return Helper.removeAccents(ccItem.getName()).toLowerCase().compareTo(Helper.removeAccents(ccItem2.getName()).toLowerCase());
+                return Helper.removeAccents(ccItem.getName()).toLowerCase().compareTo(
+                        Helper.removeAccents(ccItem2.getName()).toLowerCase());
             }
         });
     }
@@ -306,15 +314,14 @@ public class Currency implements Parcelable {
         Set<java.util.Currency> currencies = new HashSet<>();
         Locale[] locales = Locale.getAvailableLocales();
 
-        for(Locale loc : locales) {
+        for (Locale loc : locales) {
             try {
-                java.util.Currency currency = java.util.Currency.getInstance( loc );
+                java.util.Currency currency = java.util.Currency.getInstance(loc);
 
-                if ( currency != null ) {
-                    currencies.add( currency );
+                if (currency != null) {
+                    currencies.add(currency);
                 }
-            } catch(Exception exc)
-            {
+            } catch (Exception exc) {
                 // Locale not found
             }
         }

@@ -18,19 +18,16 @@ package com.scrounger.countrycurrencypicker.library;
 import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Iterables;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class Country implements Parcelable {
 
@@ -116,10 +113,10 @@ public class Country implements Parcelable {
     public static Country getCountryByName(final String countryName, Context context) {
         try {
 
-            Locale locale = Iterables.find(Arrays.asList(Locale.getAvailableLocales()), new Predicate<Locale>() {
+            Locale locale = CollectionUtil.first(Arrays.asList(Locale.getAvailableLocales()), new CollectionUtil.Func1<Locale, Boolean>() {
 
                 @Override
-                public boolean apply(Locale input) {
+                public Boolean call(Locale input) {
                     return input.getDisplayCountry(Locale.US).equals(countryName);
                 }
             });
@@ -159,9 +156,9 @@ public class Country implements Parcelable {
         sortList(list);
 
         if (filter != null && filter.length() > 0) {
-            return new ArrayList<>(Collections2.filter(list, new Predicate<Country>() {
+            return new ArrayList<>(CollectionUtil.filter(list, new CollectionUtil.Func1<Country, Boolean>() {
                 @Override
-                public boolean apply(Country input) {
+                public Boolean call(Country input) {
                     return input.getName().toLowerCase().contains(filter.toLowerCase());
                 }
             }));
@@ -185,9 +182,9 @@ public class Country implements Parcelable {
         sortList(list);
 
         if (filter != null && filter.length() > 0) {
-            return new ArrayList<>(Collections2.filter(list, new Predicate<Country>() {
+            return new ArrayList<>(CollectionUtil.filter(list, new CollectionUtil.Func1<Country, Boolean>() {
                 @Override
-                public boolean apply(Country input) {
+                public Boolean call(Country input) {
                     return input.getName().toLowerCase().contains(filter.toLowerCase()) ||
                             input.getCurrency().getName().toLowerCase().contains(filter.toLowerCase()) ||
                             input.getCurrency().getSymbol().toLowerCase().contains(filter.toLowerCase());
