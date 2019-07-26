@@ -24,7 +24,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Iterables;
 
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
@@ -167,11 +166,6 @@ public class Currency implements Parcelable {
             public boolean apply(Country input) {
                 return input.getCurrency().getCode().equals(myCurrency.getCode());
             }
-
-            @Override
-            public boolean test(@NullableDecl Country input) {
-                return false;
-            }
         }));
 
         if (foundCountries.size() > 0) {
@@ -204,12 +198,6 @@ public class Currency implements Parcelable {
                     return input.getName().toLowerCase().contains(filter.toLowerCase()) ||
                             input.getSymbol().toLowerCase().contains(filter.toLowerCase());
                 }
-
-                @Override
-                public boolean test(@NullableDecl Currency input) {
-                    return false;
-                }
-
             }));
         } else {
             return list;
@@ -218,7 +206,7 @@ public class Currency implements Parcelable {
 
     public static ArrayList<Currency> listAllWithCountries(final Context context, final String filter) {
         ArrayList<Currency> list = new ArrayList<>();
-        
+
         for (java.util.Currency currency : getAllCurrencies()) {
             Currency myCurrency = getCurrencyWithCountries(currency, context);
 
@@ -240,17 +228,7 @@ public class Currency implements Parcelable {
                                 public boolean apply(Country input) {
                                     return input.getName().toLowerCase().contains(filter.toLowerCase());
                                 }
-
-                                @Override
-                                public boolean test(@NullableDecl Country input) {
-                                    return false;
-                                }
                             });
-                }
-
-                @Override
-                public boolean test(@NullableDecl Currency input) {
-                    return false;
                 }
             }));
         } else {
