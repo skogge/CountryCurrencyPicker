@@ -16,11 +16,9 @@
 package com.scrounger.countrycurrencypicker.library;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -32,6 +30,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 public class Currency implements Parcelable {
 
@@ -120,12 +122,18 @@ public class Currency implements Parcelable {
     @Nullable
     public static Currency getCurrency(String countryCode, Context context) {
         Locale locale = new Locale("", countryCode);
-        java.util.Currency currency = java.util.Currency.getInstance(locale);
+
+        java.util.Currency currency = null;
+        try {
+            currency = java.util.Currency.getInstance(locale);
+        } catch (IllegalArgumentException e) {
+            // Unsupported currency
+        }
 
         if (currency != null) {
             return new Currency(
                     currency.getCurrencyCode(),
-                    currency.getDisplayName(),
+                    Build.VERSION.SDK_INT >= 19 ? currency.getDisplayName() : currency.getCurrencyCode(),
                     currency.getSymbol(),
                     Helper.getFlagDrawableId(currency.getCurrencyCode(), context));
         }
