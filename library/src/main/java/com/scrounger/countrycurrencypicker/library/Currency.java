@@ -29,7 +29,9 @@ import org.jetbrains.annotations.Contract;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -144,7 +146,7 @@ public class Currency implements Parcelable {
     public static Currency getCurrency(java.util.Currency currency, Context context) {
         return new Currency(
                 currency.getCurrencyCode(),
-                currency.getDisplayName(),
+                Build.VERSION.SDK_INT >= 19 ? currency.getDisplayName() : currency.getCurrencyCode(),
                 currency.getSymbol(),
                 Helper.getFlagDrawableId(currency.getCurrencyCode(), context));
     }
@@ -183,7 +185,7 @@ public class Currency implements Parcelable {
     public static ArrayList<Currency> listAll(Context context, final String filter) {
         ArrayList<Currency> list = new ArrayList<>();
 
-        for (java.util.Currency currency : java.util.Currency.getAvailableCurrencies()) {
+        for (java.util.Currency currency : getAllCurrencies()) {
             list.add(getCurrency(currency, context));
         }
 
@@ -204,8 +206,8 @@ public class Currency implements Parcelable {
 
     public static ArrayList<Currency> listAllWithCountries(final Context context, final String filter) {
         ArrayList<Currency> list = new ArrayList<>();
-
-        for (java.util.Currency currency : java.util.Currency.getAvailableCurrencies()) {
+        
+        for (java.util.Currency currency : getAllCurrencies()) {
             Currency myCurrency = getCurrencyWithCountries(currency, context);
 
             if (myCurrency != null) {
@@ -295,4 +297,29 @@ public class Currency implements Parcelable {
         }
     };
     //endregion
+
+    public static Set<java.util.Currency> getAllCurrencies() {
+        if (Build.VERSION.SDK_INT >= 19) {
+            return java.util.Currency.getAvailableCurrencies();
+        }
+
+        Set<java.util.Currency> currencies = new HashSet<>();
+        Locale[] locales = Locale.getAvailableLocales();
+
+        for(Locale loc : locales) {
+            try {
+                java.util.Currency currency = java.util.Currency.getInstance( loc );
+
+                if ( currency != null ) {
+                    currencies.add( currency );
+                }
+            } catch(Exception exc)
+            {
+                // Locale not found
+            }
+        }
+
+        return currencies;
+    }
+
 }
